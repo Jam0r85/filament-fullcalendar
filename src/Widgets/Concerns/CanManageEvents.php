@@ -97,6 +97,14 @@ trait CanManageEvents
             } else { // for date range select
                 $start = Carbon::parse($date['start'], $timezone);
                 $end = Carbon::parse($date['end'], $timezone);
+                
+                if ($date['allDay']) {
+                    /**
+                     * date is exclusive, read more https://fullcalendar.io/docs/select-callback
+                     * For example, if the selection is all-day and the last day is a Thursday, end will be Friday.
+                     */
+                    $end->subDay()->endOfDay();
+                }
             }
 
             $calendar->createEventForm->fill([
