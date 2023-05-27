@@ -88,21 +88,22 @@ trait CanManageEvents
                 : config('app.timezone');
 
             if (isset($date['date'])) { // for single date click
-                $end = $start = Carbon::parse($date['date'], $timezone);
+                $length = $this->config('slotDuration')
+                    ? Carbon::createFromTimeString($this->config('slotDuration'))->format('i')
+                    : null;
+                
+                $start = Carbon::parse($date['date'], $timezone);
+                $end = $length ? Carbon::parse($date['date'], $timezone)->addMinutes($length) : $start->clone();
             } else { // for date range select
                 $start = Carbon::parse($date['start'], $timezone);
                 $end = Carbon::parse($date['end'], $timezone);
-
-                if ($date['allDay']) {
-                    /**
-                     * date is exclusive, read more https://fullcalendar.io/docs/select-callback
-                     * For example, if the selection is all-day and the last day is a Thursday, end will be Friday.
-                     */
-                    $end->subDay()->endOfDay();
-                }
             }
 
-            $calendar->createEventForm->fill(['start' => $start, 'end' => $end]);
+            $calendar->createEventForm->fill([
+                'start' => $start,
+                'end' => $end,
+                'allDay' => $date['allDay']
+            ]);
         };
     }
 }
